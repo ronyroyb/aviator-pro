@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator Predictor</title>
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Body Style with Background Image */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: url('https://i.postimg.cc/2jQk9NNZ/aviator.webp') no-repeat center center fixed;
+            background-size: cover;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        /* Container */
+        .container {
+            background-color: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        /* Header */
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 0.5em;
+            color: #ffdd57;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .tagline {
+            font-size: 1em;
+            color: #d1e7ff;
+            margin-bottom: 1.5em;
+            animation: fadeIn 1.5s ease-in-out;
+        }
+
+        /* Input Fields */
+        .input-field {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        /* Button Style */
+        .btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            color: #1e3c72;
+            background-color: #ffdd57;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #ffc107;
+            transform: scale(1.05);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Show selected company */
+        .selected-company {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #ffdd57;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .selected-company img {
+            width: 30px;
+            height: 30px;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="company-selection-page">
+        <header class="header">
+            <h1>Choose Your Platform</h1>
+            <p class="tagline">Select the betting platform for prediction</p>
+        </header>
+
+        <div class="company-selection">
+            <div class="btn" onclick="playSound(); showLoginPage('Linebet')">Linebet</div>
+            <div class="btn" onclick="playSound(); showLoginPage('1xBet')">1xBet</div>
+            <div class="btn" onclick="playSound(); showLoginPage('Melbet')">Melbet</div>
+        </div>
+    </div>
+
+    <div class="container" id="login-page" style="display: none;">
+        <header class="header">
+            <h1 id="selected-company">Login</h1>
+            <p class="tagline">Enter your username and secret code</p>
+        </header>
+
+        <input type="text" id="username" class="input-field" placeholder="Enter your username">
+        <input type="password" id="secret-code" class="input-field" placeholder="Enter secret code">
+        <button class="btn" onclick="playSound(); validateCode()">Continue</button>
+        <p id="error-message" style="color: #ff4d4d; display: none; margin-top: 10px;">Invalid secret code!</p>
+    </div>
+
+    <div class="container" id="prediction-page" style="display: none;">
+        <header class="header">
+            <h1>Aviator Predictor</h1>
+            <p class="tagline">Predict the next multiplier and improve your chances!</p>
+        </header>
+
+        <div class="selected-company" id="company-name-display">
+            <!-- Company logo and name will be displayed here -->
+        </div>
+
+        <main class="game-section">
+            <div class="prediction-box">
+                <label for="prediction" aria-label="Multiplier Prediction">Multiplier Prediction:</label>
+                <span id="prediction" class="prediction">--</span>
+            </div>
+            <button class="btn" onclick="playSound(); generatePrediction()">Generate Prediction</button>
+        </main>
+    </div>
+
+    <!-- Audio element -->
+    <audio id="click-sound" src="https://www.dropbox.com/scl/fi/qo1te2p5bpl7mc4zr9uxn/mixkit-water-sci-fi-bleep-902.wav?dl=1"></audio>
+
+    <script>
+        const correctCode = "F7v!uP9z@3rN2aZ#4L8yX";
+        let selectedCompany = '';
+
+        const logos = {
+            "Linebet": "https://i.postimg.cc/MK7XFsY4/linebet.webp",
+            "1xBet": "https://i.postimg.cc/DyTwLrKc/1xbet-com.png",
+            "Melbet": "https://i.postimg.cc/R0yMFfRK/melbet-logo.jpg"
+        };
+
+        function showLoginPage(companyName) {
+            selectedCompany = companyName;
+            document.getElementById("company-selection-page").style.display = "none";
+            document.getElementById("login-page").style.display = "block";
+            document.getElementById("selected-company").textContent = `${companyName} Login`;
+        }
+
+        function validateCode() {
+            const enteredCode = document.getElementById("secret-code").value;
+            const username = document.getElementById("username").value;
+            if (enteredCode === correctCode && username) {
+                document.getElementById("login-page").style.display = "none";
+                document.getElementById("prediction-page").style.display = "block";
+                document.getElementById("company-name-display").innerHTML = `
+                    <img src="${logos[selectedCompany]}" alt="${selectedCompany} logo">
+                    ${selectedCompany} - ${username}
+                `;
+            } else {
+                document.getElementById("error-message").style.display = "block";
+            }
+        }
+
+        function generatePrediction() {
+            const multiplier = (Math.random() * 9 + 1).toFixed(2);
+            document.getElementById("prediction").textContent = `${multiplier}x`;
+        }
+
+        // Function to play sound
+        function playSound() {
+            document.getElementById("click-sound").play();
+        }
+    </script>
+</body>
+</html>
